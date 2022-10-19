@@ -97,3 +97,135 @@ struct Num {
 ### 原理
 
 別の比較演算子をoverloadしなっかたクラスは、たとえばa < bを使う時、自動的にa <=> b < 0に変換する。
+
+## 機能検査マクロ
+
+### 使い方
+
+`<version>`の`__cpp_lib_xxx`を使う。
+
+```C++
+// <version>
+#include <version>
+#ifdef __cpp_lib_three_way_comparison
+#   include <compare>
+#else
+#   error Spaceship has not yet landed
+#endif
+```
+
+もしくは、C++17で導入された`__has_include()`を使う。
+
+```C++
+// __has_include
+#if __has_include(<compare>)
+#   include <compare>
+#else
+#   error Spaceship has not yet landed
+#endif
+```
+
+## Safer  templates using concepts
+
+### 使い方
+
+`<concepts>`を使用。(C++20)
+
+```C++
+#include <iostream>
+#include <concepts>
+
+// std::integralは、<concepts>の中にいるconceptの一種
+// ここで、複数conceptsを結合する(||を使う)
+template <typename T> 
+concept Numeric = std::integral<T> || std::floating_point<T>;
+
+template <typename T> requires Numeric<T>
+T arg42(const T & arg) {
+    return arg + 42;
+}
+
+int main()
+{
+    std::cout<< arg42(0) <<'\n';
+}
+```
+
+もしくは、`<type_traits>`を使う。(C++11)
+
+```C++
+template<typename T> requires is_integral<T>::value  // value is bool
+constexpr double avg(vector<T> const& vec) {
+    double sum{ accumulate(vec.begin(), vec.end(),
+      0.0)
+    };
+    return sum / vec.size();
+}
+
+// traitsはもともと、constexpr boolのtemplate
+template<typename T>　constexpr bool is_gt_byte{ sizeof(T) > 1 };
+```
+
+組み合わせて、
+
+```C++
+template<typename T>
+concept Numeric = is_gt_byte<T> && (integral<T> || floating_point<T>);
+```
+
+その他の形式：
+
+```C++
+template<Numeric T>
+T arg42(const T & arg) {
+    return arg + 42;
+}
+```
+
+```C++
+// templateキーワードは不要
+// typenameをautoに変える
+// autoの前に、限定Numericを表す
+auto arg42(Numeric auto & arg) {
+    return arg + 42;
+}
+```
+
+## Ranges and Views
+
+`<ranges>`に参照
+
+- Range: begin()とend()の間の要素
+- View: rangeから作成された、lazyなrange
+- View Adapter: RangeからViewを作成するもの
+
+### 使い方
+
+```C++
+namespace ranges = std::ranges;
+namespace views = std::views;
+
+// ranges::take_view
+const vector<int> nums{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+auto result = ranges::take_view(nums, 5);
+for (auto v: result) cout << v << " ";
+
+// views::take
+auto result = nums | views::take(5);
+for (auto v: result) cout << v << " ";
+
+// View Adapter
+auto result = nums | views::take(5) | views::reverse;
+
+// views::filter()
+auto result = nums | views::filter([](int i){ return 0 == i % 2; });
+
+// views::transform()
+auto result = nums | views::transform([](int i){ return i * i; });
+
+// views::iota(value, bound)、新しく臨時rangeを作成
+auto rnums = views::iota(1) | views::take(200);
+```
+
+
+
