@@ -1,4 +1,6 @@
 * [マルチスレッド](multi-thread/)
-* [～５話](multi-thread/1-5.md)
-* [６～９話](multi-thread/6-9.md)
+* [~5話](multi-thread/1-5.md)
+* [6~9話](multi-thread/6-9.md)
+* [10~13話](multi-thread/10-13.md)
+* [14~15話](multi-thread/14-15.md)
 * [ホームに戻る](/)
